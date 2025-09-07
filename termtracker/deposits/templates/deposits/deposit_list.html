@@ -1,0 +1,54 @@
+{% extends "deposits/base.html" %}
+{% block title %}Deposits{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Deposits</h2>
+    <a href="{% url 'deposit_create' %}" class="btn btn-success">+ Add Deposit</a>
+</div>
+
+{% if deposits %}
+<div class="row">
+    {% for deposit in deposits %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 {% if deposit.currency == 'AUD' %}border-primary{% else %}border-success{% endif %}">
+            <div class="card-header {% if deposit.currency == 'AUD' %}bg-primary text-white{% else %}bg-success text-white{% endif %}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ deposit.name }}</h5>
+                    <span class="badge {% if deposit.currency == 'AUD' %}bg-light text-dark{% else %}bg-light text-dark{% endif %}">{{ deposit.currency }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Principal:</strong>
+                    {% if deposit.currency == 'AUD' %}
+                        ${{ deposit.principal|floatformat:2 }}
+                    {% else %}
+                        £{{ deposit.principal|floatformat:2 }}
+                    {% endif %}
+                    <br>
+                    <strong>Start Date:</strong> {{ deposit.start_date }}<br>
+                    <strong>End Date:</strong> {{ deposit.end_date }}<br>
+                    {% if deposit.notes %}
+                    <strong>Notes:</strong> {{ deposit.notes }}<br>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card-footer">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'deposit_edit' deposit.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{% url 'deposit_delete' deposit.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+    <h4 class="alert-heading">No Deposits Found</h4>
+    <p>You haven't added any term deposits yet.</p>
+    <hr>
+    <a href="{% url 'deposit_create' %}" class="btn btn-primary">Add Your First Deposit</a>
+</div>
+{% endif %}
+{% endblock %}

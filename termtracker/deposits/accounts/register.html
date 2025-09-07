@@ -1,0 +1,12 @@
+{% extends "deposits/base.html" %}
+{% block title %}Register{% endblock %}
+{% block content %}
+<div class="card shadow p-4">
+    <h2 class="mb-3">User Registration</h2>
+    <form method="post">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-primary">Register</button>
+    </form>
+</div>
+{% endblock %}

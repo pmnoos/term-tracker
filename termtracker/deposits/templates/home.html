@@ -1,0 +1,31 @@
+{% extends "deposits/base.html" %}
+{% block title %}Home - Term Tracker{% endblock %}
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-8 mx-auto">
+        <div class="card shadow">
+            <div class="card-header bg-primary text-white">
+                <h1 class="mb-0">Welcome to Term Deposit Tracker</h1>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    Term Deposit Tracker is a comprehensive application for managing your term deposits and pensions.
+                    Keep track of your investments, calculate interest earnings, and estimate your tax obligations
+                    across multiple currencies.
+                </p>
+                <h3 class="mt-4">Key Features</h3>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item">Track term deposits with different currencies (AUD, GBP, etc.)</li>
+                    <li class="list-group-item">Calculate interest earnings with various compounding options</li>
+                    <li class="list-group-item">Manage your pension information</li>
+                    <li class="list-group-item">Estimate tax obligations for both UK and Australian tax systems</li>
+                    <li class="list-group-item">View dashboard summaries of your financial information</li>
+                </ul>
+                <div class="d-flex justify-content-center mt-4">
+                    <a href="{% url 'register' %}" class="btn btn-success btn-lg">Get Started</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

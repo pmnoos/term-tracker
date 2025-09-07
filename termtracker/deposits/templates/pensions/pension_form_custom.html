@@ -1,0 +1,49 @@
+{% extends "deposits/base.html" %}
+{% block title %}New Pension{% endblock %}
+{% block content %}
+<div class="row mb-4">
+  <div class="col-md-8 mx-auto">
+    <div class="card shadow">
+      <div class="card-header bg-success text-white">
+        <h2 class="mb-0">Add a New Pension</h2>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">Enter the details of your pension. Fields with <span class="text-danger">*</span> are required.</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <label for="id_name" class="form-label">Pension Name <span class="text-danger">*</span></label>
+                <input type="text" name="name" maxlength="200" class="form-control" id="id_name" placeholder="e.g., State Pension" required value="{{ form.name.value|default_if_none:'' }}">
+            </div>
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label for="id_monthly_amount" class="form-label">Monthly Amount <span class="text-danger">*</span></label>
+                    <input type="number" step="0.01" name="monthly_amount" class="form-control" id="id_monthly_amount" placeholder="e.g., 1200" required value="{{ form.monthly_amount.value|default_if_none:'' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="id_tax_paid" class="form-label">Tax Paid Monthly</label>
+                    <input type="number" step="0.01" name="tax_paid" class="form-control" id="id_tax_paid" placeholder="e.g., 200" value="{{ form.tax_paid.value|default_if_none:'' }}">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label for="id_currency" class="form-label">Currency <span class="text-danger">*</span></label>
+                    <select name="currency" class="form-select" id="id_currency" required>
+                        <option value="">Select Currency</option>
+                        <option value="GBP" {% if form.currency.value == 'GBP' %}selected{% endif %}>GBP (£)</option>
+                        <option value="AUD" {% if form.currency.value == 'AUD' %}selected{% endif %}>AUD ($)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mb-3">
+                <label for="id_notes" class="form-label">Notes</label>
+                <textarea name="notes" class="form-control" id="id_notes" rows="3" placeholder="Additional information about this pension">{{ form.notes.value|default_if_none:'' }}</textarea>
+            </div>
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'pension_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Save Pension</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

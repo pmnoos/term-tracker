@@ -1,0 +1,104 @@
+{% extends "deposits/base.html" %}
+{% block content %}
+<div class="container">
+    <h2 class="mb-4">Tax Obligations</h2>
+    
+    <!-- Year Selection -->
+    <form method="get" class="mb-4">
+        <div class="row">
+            <div class="col-md-4">
+                <select name="year" class="form-select" onchange="this.form.submit()">
+                    {% for year in available_years %}
+                        <option value="{{ year }}" {% if year == selected_year %}selected{% endif %}>
+                            {{ year }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+    </form>
+    
+    <div class="row mb-4">
+        <!-- UK Container -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">United Kingdom</h4>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <strong>Tax Year:</strong> {{ tax_data.uk.tax_year_start }} - {{ tax_data.uk.tax_year_end }}<br>
+                        <strong>Total Interest Earned:</strong> £{{ tax_data.uk.total_interest|floatformat:2 }}<br>
+                        <strong>Total Pension Income:</strong> £{{ tax_data.uk.total_pension|floatformat:2 }}<br>
+                        <strong>Total Income:</strong> £{{ tax_data.uk.total_income|floatformat:2 }}<br>
+                        <strong>Tax-Free Threshold:</strong> £{{ tax_data.uk.threshold|floatformat:2 }}<br>
+                        <strong>Taxable Income:</strong> £{{ tax_data.uk.taxable_income|floatformat:2 }}<br>
+                        <strong>Tax Already Paid:</strong> £{{ tax_data.uk.total_tax_paid|floatformat:2 }}<br>
+                        <strong>Estimated Tax (@{{ profile_uk.marginal_rate }}%):</strong> £{{ tax_data.uk.tax_owed|floatformat:2 }}
+                    </p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Australia Container -->
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 border-success">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Australia</h4>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">
+                        <strong>Tax Year:</strong> {{ tax_data.au.tax_year_start }} - {{ tax_data.au.tax_year_end }}<br>
+                        <strong>Total Interest Earned:</strong> ${{ tax_data.au.total_interest|floatformat:2 }}<br>
+                        <strong>Total Pension Income:</strong> ${{ tax_data.au.total_pension|floatformat:2 }}<br>
+                        <strong>Total Income:</strong> ${{ tax_data.au.total_income|floatformat:2 }}<br>
+                        <strong>Tax-Free Threshold:</strong> ${{ tax_data.au.threshold|floatformat:2 }}<br>
+                        <strong>Taxable Income:</strong> ${{ tax_data.au.taxable_income|floatformat:2 }}<br>
+                        <strong>Tax Already Paid:</strong> ${{ tax_data.au.total_tax_paid|floatformat:2 }}<br>
+                        <strong>Estimated Tax (@{{ profile_au.marginal_rate }}%):</strong> ${{ tax_data.au.tax_owed|floatformat:2 }}
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Pension List -->
+    {% if pensions %}
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h4 class="mb-0">Your Pensions</h4>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Name</th>
+                                    <th>Monthly Amount</th>
+                                    <th>Tax Paid Monthly</th>
+                                    <th>Currency</th>
+                                    <th>Annual Amount</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pension in pensions %}
+                                <tr>
+                                    <td>{{ pension.name }}</td>
+                                    <td>{{ pension.monthly_amount|floatformat:2 }}</td>
+                                    <td>{{ pension.tax_paid|floatformat:2 }}</td>
+                                    <td>{{ pension.currency }}</td>
+                                    <td>{{ pension.annual_amount|floatformat:2 }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

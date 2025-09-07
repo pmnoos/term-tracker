@@ -1,0 +1,23 @@
+{% extends "deposits/base.html" %}
+{% block title %}New Pension{% endblock %}
+{% block content %}
+<div class="row mb-4">
+  <div class="col-md-8 mx-auto">
+    <div class="card shadow">
+      <div class="card-header bg-success text-white">
+        <h2 class="mb-0">Add a New Pension</h2>
+      </div>
+      <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <div class="d-flex justify-content-between mt-4">
+                <a href="{% url 'pension_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-success">Save Pension</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

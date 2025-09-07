@@ -1,0 +1,23 @@
+{% extends "deposits/base.html" %}
+{% block title %}Delete Deposit{% endblock %}
+{% block content %}
+<div class="row mb-4">
+  <div class="col-md-8 mx-auto">
+    <div class="card shadow">
+      <div class="card-header bg-danger text-white">
+        <h2 class="mb-0">Delete Deposit</h2>
+      </div>
+      <div class="card-body">
+        <p class="mb-4">Are you sure you want to delete the deposit <strong>{{ deposit.name }}</strong>?</p>
+        <form method="post">
+            {% csrf_token %}
+            <div class="d-flex justify-content-between">
+                <a href="{% url 'deposit_list' %}" class="btn btn-secondary">Cancel</a>
+                <button type="submit" class="btn btn-danger">Delete</button>
+            </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

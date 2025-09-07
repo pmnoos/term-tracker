@@ -1,0 +1,196 @@
+{% extends "deposits/base.html" %}
+{% with page_title=edit_mode|yesno:'Edit Deposit,Add New Deposit' %}
+    {% block title %}{{ page_title }}{% endblock %}
+{% endwith %}
+{% block content %}
+<div class="row mb-4">
+  <div class="col-md-8 mx-auto">
+    <div class="card shadow">
+      <div class="card-header bg-primary text-white">
+        <h2 class="mb-0">{% if edit_mode %}Edit Deposit{% else %}Add New Deposit{% endif %}</h2>
+      </div>
+      <div class="card-body">
+        <p class="text-muted">Enter the details of your term deposit. Fields with <span class="text-danger">*</span> are required.</p>
+    
+    {% if form.errors %}
+        <div class="alert alert-danger mb-4" role="alert">
+            <h4 class="alert-heading">Please correct the following errors:</h4>
+            <ul class="mb-0">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                        <li><strong>{{ field.label }}:</strong> {{ error }}</li>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                    <li>{{ error }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    {% endif %}
+    
+    <form method="post" id="deposit-form">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label for="id_name" class="form-label">Bank Name <span class="text-danger">*</span></label>
+            <input type="text" name="name" maxlength="200" class="form-control" id="id_name" placeholder="e.g., Global Finance Bank" required value="{{ form.name.value|default_if_none:'' }}">
+        </div>
+        <div class="mb-3">
+            <label for="id_notes" class="form-label">Bond Name / Reference <span class="text-danger">*</span></label>
+            <input type="text" name="notes" class="form-control" id="id_notes" placeholder="e.g., GFB-2024-Q2" required value="{{ form.notes.value|default_if_none:'' }}">
+        </div>
+        <div class="mb-3">
+            <label for="id_currency" class="form-label">Currency (3-letter code) <span class="text-danger">*</span></label>
+            <input type="text" name="currency" maxlength="3" class="form-control" id="id_currency" placeholder="e.g., USD" required value="{{ form.currency.value|default_if_none:'' }}">
+        </div>
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <label for="id_start_date" class="form-label">Start Date <span class="text-danger">*</span></label>
+                <input type="date" name="start_date" class="form-control" id="id_start_date" required value="{{ form.start_date.value|default_if_none:'' }}">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="id_length" class="form-label">Length (Months) <span class="text-danger">*</span></label>
+                <input type="number" min="1" class="form-control" id="id_length" placeholder="12" required value="">
+            </div>
+            <div class="col-md-4 mb-3">
+                <label for="id_compounding" class="form-label">Compounding <span class="text-danger">*</span></label>
+                <select name="compounding" class="form-select" id="id_compounding" required>
+                    <option value="">Select...</option>
+                    <option value="SIMPLE" {% if form.compounding.value == 'SIMPLE' %}selected{% endif %}>Simple</option>
+                    <option value="MONTHLY" {% if form.compounding.value == 'MONTHLY' %}selected{% endif %}>Monthly</option>
+                    <option value="ANNUAL" {% if form.compounding.value == 'ANNUAL' %}selected{% endif %}>Annual</option>
+                </select>
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="id_end_date" class="form-label">End Date (auto-calculated)</label>
+            <input type="text" class="form-control" id="id_end_date" name="end_date" readonly tabindex="-1" value="{{ form.end_date.value|default_if_none:'' }}">
+        </div>
+        <div class="row">
+            <div class="col-md-6 mb-3">
+                <label for="id_annual_rate" class="form-label">Interest Rate (%) <span class="text-danger">*</span></label>
+                <input type="number" step="0.01" name="annual_rate" class="form-control" id="id_annual_rate" placeholder="5" required value="{{ form.annual_rate.value|default_if_none:'' }}">
+            </div>
+            <div class="col-md-6 mb-3">
+                <label for="id_principal" class="form-label">Deposit Amount <span class="text-danger">*</span></label>
+                <input type="number" step="0.01" name="principal" class="form-control" id="id_principal" placeholder="10000" required value="{{ form.principal.value|default_if_none:'' }}">
+            </div>
+        </div>
+        <div class="mb-3">
+            <label for="id_interest_earned" class="form-label">Interest Earned (auto-calculated)</label>
+            <input type="text" class="form-control" id="id_interest_earned" readonly value="">
+        </div>
+        <div class="mb-3">
+            <label for="id_balance_end" class="form-label">Balance at End of Term (auto)</label>
+            <input type="text" class="form-control" id="id_balance_end" readonly value="">
+        </div>
+        <div class="d-flex justify-content-between mt-4">
+            <a href="{% url 'deposit_list' %}" class="btn btn-secondary">Cancel</a>
+            <button type="submit" class="btn btn-primary" id="submit-btn">
+                <span id="submit-text">{% if edit_mode %}Save Changes{% else %}Add Deposit{% endif %}</span>
+                <span id="submit-spinner" class="spinner-border spinner-border-sm d-none" role="status" aria-hidden="true"></span>
+            </button>
+        </div>
+    </form>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+// Ensure JS runs after DOM is loaded
+document.addEventListener('DOMContentLoaded', function() {
+    function calculateLengthMonths(start, end) {
+        if (!start || !end) return '';
+        const startDate = new Date(start);
+        const endDate = new Date(end);
+        let months = (endDate.getFullYear() - startDate.getFullYear()) * 12;
+        months += endDate.getMonth() - startDate.getMonth();
+        if (endDate.getDate() < startDate.getDate()) months--;
+        return months > 0 ? months : '';
+    }
+    function calculateEndDate() {
+        const start = document.getElementById('id_start_date').value;
+        const months = parseInt(document.getElementById('id_length').value);
+        if (start && months) {
+            const d = new Date(start);
+            d.setMonth(d.getMonth() + months);
+            // Format as YYYY-MM-DD for Django
+            const year = d.getFullYear();
+            const month = String(d.getMonth() + 1).padStart(2, '0');
+            const day = String(d.getDate()).padStart(2, '0');
+            document.getElementById('id_end_date').value = `${year}-${month}-${day}`;
+        } else {
+            document.getElementById('id_end_date').value = '';
+        }
+    }
+    function calculateInterestAndBalance() {
+        const principal = parseFloat(document.getElementById('id_principal').value);
+        const rate = parseFloat(document.getElementById('id_annual_rate').value);
+        const months = parseInt(document.getElementById('id_length').value);
+        const compounding = document.getElementById('id_compounding').value;
+        const currency = document.getElementById('id_currency').value || 'USD';
+        
+        if (principal && rate && months && compounding) {
+            // Convert months to years for calculation
+            const termYears = months / 12;
+            // Convert percentage to decimal
+            const rateDecimal = rate / 100;
+            
+            let interest;
+            if (compounding === 'SIMPLE') {
+                // Simple interest: P * r * t
+                interest = principal * rateDecimal * termYears;
+            } else if (compounding === 'MONTHLY') {
+                // Monthly compounding: P * (1 + r/12)^(12*t) - P
+                const n = 12;
+                const A = principal * Math.pow(1 + rateDecimal / n, n * termYears);
+                interest = A - principal;
+            } else if (compounding === 'ANNUAL') {
+                // Annual compounding: P * (1 + r)^t - P
+                const A = principal * Math.pow(1 + rateDecimal, termYears);
+                interest = A - principal;
+            }
+            
+            // Format currency properly
+            const formatter = new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: currency
+            });
+            
+            document.getElementById('id_interest_earned').value = formatter.format(interest);
+            document.getElementById('id_balance_end').value = formatter.format(principal + interest);
+        } else {
+            document.getElementById('id_interest_earned').value = '';
+            document.getElementById('id_balance_end').value = '';
+        }
+    }
+    // Pre-fill Length (Months) if editing
+    const startInput = document.getElementById('id_start_date');
+    const endInput = document.getElementById('id_end_date');
+    const lengthInput = document.getElementById('id_length');
+    if (startInput.value && endInput.value && !lengthInput.value) {
+        lengthInput.value = calculateLengthMonths(startInput.value, endInput.value);
+    }
+    startInput.addEventListener('change', function() { calculateEndDate(); });
+    lengthInput.addEventListener('input', function() { calculateEndDate(); calculateInterestAndBalance(); });
+    document.getElementById('id_principal').addEventListener('input', calculateInterestAndBalance);
+    document.getElementById('id_annual_rate').addEventListener('input', calculateInterestAndBalance);
+    document.getElementById('id_compounding').addEventListener('change', calculateInterestAndBalance);
+    document.getElementById('id_currency').addEventListener('input', function() {
+        calculateInterestAndBalance();
+        calculateEndDate();
+    });
+    // Run on page load if values are pre-filled
+    calculateEndDate();
+    calculateInterestAndBalance();
+    
+    // Handle form submission
+    document.getElementById('deposit-form').addEventListener('submit', function() {
+        // Show loading indicator
+        document.getElementById('submit-text').classList.add('d-none');
+        document.getElementById('submit-spinner').classList.remove('d-none');
+        // Disable submit button to prevent double submission
+        document.getElementById('submit-btn').disabled = true;
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "deposits/base.html" %}
+{% block title %}Pensions{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>Pensions</h2>
+    <a href="{% url 'pension_create' %}" class="btn btn-success">+ Add Pension</a>
+</div>
+
+{% if pensions %}
+<div class="row">
+    {% for pension in pensions %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100 {% if pension.currency == 'AUD' %}border-primary{% else %}border-success{% endif %}">
+            <div class="card-header {% if pension.currency == 'AUD' %}bg-primary text-white{% else %}bg-success text-white{% endif %}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">{{ pension.name }}</h5>
+                    <span class="badge {% if pension.currency == 'AUD' %}bg-light text-dark{% else %}bg-light text-dark{% endif %}">{{ pension.currency }}</span>
+                </div>
+            </div>
+            <div class="card-body">
+                <p class="card-text">
+                    <strong>Monthly Amount:</strong>
+                    {% if pension.currency == 'AUD' %}
+                        ${{ pension.monthly_amount|floatformat:2 }}
+                    {% else %}
+                        £{{ pension.monthly_amount|floatformat:2 }}
+                    {% endif %}
+                    <br>
+                    <strong>Tax Rate:</strong> {{ pension.tax_rate }}%<br>
+                    {% if pension.notes %}
+                    <strong>Notes:</strong> {{ pension.notes }}<br>
+                    {% endif %}
+                </p>
+            </div>
+            <div class="card-footer">
+                <div class="btn-group" role="group">
+                    <a href="{% url 'pension_edit' pension.pk %}" class="btn btn-sm btn-primary">Edit</a>
+                    <a href="{% url 'pension_delete' pension.pk %}" class="btn btn-sm btn-danger">Delete</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="alert alert-info" role="alert">
+    <h4 class="alert-heading">No Pensions Found</h4>
+    <p>You haven't added any pensions yet.</p>
+    <hr>
+    <a href="{% url 'pension_create' %}" class="btn btn-primary">Add Your First Pension</a>
+</div>
+{% endif %}
+{% endblock %}
