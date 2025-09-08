@@ -8,10 +8,7 @@ __pycache__/
 # Django
 *.sqlite3
 *.log
-*.pot
-*.pyc
-*.pyo
-*.pyd
+*.potgit branch
 
 # VS Code
 .vscode/
